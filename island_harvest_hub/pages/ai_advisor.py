@@ -25,8 +25,17 @@ if not check_password():
 if not os.environ.get('ANTHROPIC_API_KEY'):
     # First, try to get from Streamlit secrets (for Streamlit Cloud)
     try:
-        if hasattr(st, 'secrets') and 'ANTHROPIC_API_KEY' in st.secrets:
-            os.environ['ANTHROPIC_API_KEY'] = st.secrets['ANTHROPIC_API_KEY']
+        if hasattr(st, 'secrets'):
+            # Try dictionary access
+            if 'ANTHROPIC_API_KEY' in st.secrets:
+                api_key = st.secrets['ANTHROPIC_API_KEY']
+                if api_key:
+                    os.environ['ANTHROPIC_API_KEY'] = str(api_key).strip()
+            # Try attribute access as fallback
+            elif hasattr(st.secrets, 'ANTHROPIC_API_KEY'):
+                api_key = getattr(st.secrets, 'ANTHROPIC_API_KEY', '')
+                if api_key:
+                    os.environ['ANTHROPIC_API_KEY'] = str(api_key).strip()
     except Exception:
         pass
     
@@ -131,18 +140,33 @@ def show_ai_advisor():
         # Debug info
         with st.expander("🔍 Debug Information"):
             st.write("**Checking for API key in:**")
-            st.write(f"- Environment variable: {bool(os.environ.get('ANTHROPIC_API_KEY'))}")
+            env_key = os.environ.get('ANTHROPIC_API_KEY', '')
+            st.write(f"- Environment variable: {bool(env_key)}")
+            if env_key:
+                st.write(f"  - Key preview: {env_key[:20]}...{env_key[-4:] if len(env_key) > 24 else ''}")
+            
             try:
                 if hasattr(st, 'secrets'):
-                    st.write(f"- Streamlit secrets available: True")
-                    st.write(f"- ANTHROPIC_API_KEY in secrets: {'ANTHROPIC_API_KEY' in st.secrets}")
+                    st.write(f"- Streamlit secrets available: ✅ True")
+                    # Try dictionary access
                     if 'ANTHROPIC_API_KEY' in st.secrets:
-                        key_preview = str(st.secrets['ANTHROPIC_API_KEY'])[:20] + "..." if len(str(st.secrets['ANTHROPIC_API_KEY'])) > 20 else str(st.secrets['ANTHROPIC_API_KEY'])
-                        st.write(f"- Key preview: {key_preview}")
+                        secret_key = str(st.secrets['ANTHROPIC_API_KEY']).strip()
+                        st.write(f"- Found in secrets (dict access): ✅ Yes")
+                        st.write(f"  - Key preview: {secret_key[:20]}...{secret_key[-4:] if len(secret_key) > 24 else ''}")
+                    # Try attribute access
+                    elif hasattr(st.secrets, 'ANTHROPIC_API_KEY'):
+                        secret_key = str(getattr(st.secrets, 'ANTHROPIC_API_KEY', '')).strip()
+                        st.write(f"- Found in secrets (attr access): ✅ Yes")
+                        st.write(f"  - Key preview: {secret_key[:20]}...{secret_key[-4:] if len(secret_key) > 24 else ''}")
+                    else:
+                        st.write(f"- ANTHROPIC_API_KEY in secrets: ❌ No")
+                        st.write(f"  - Available keys: {list(st.secrets.keys()) if hasattr(st.secrets, 'keys') else 'N/A'}")
                 else:
-                    st.write("- Streamlit secrets available: False")
+                    st.write("- Streamlit secrets available: ❌ False")
             except Exception as e:
                 st.write(f"- Error checking secrets: {str(e)}")
+                import traceback
+                st.code(traceback.format_exc())
         
         return
     

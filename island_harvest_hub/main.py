@@ -15,11 +15,16 @@ if not os.environ.get('ANTHROPIC_API_KEY'):
     # First, try to get from Streamlit secrets (for Streamlit Cloud)
     try:
         if hasattr(st, 'secrets'):
-            # Try direct access first
+            # Try dictionary access
             if 'ANTHROPIC_API_KEY' in st.secrets:
                 api_key = st.secrets['ANTHROPIC_API_KEY']
                 if api_key:
-                    os.environ['ANTHROPIC_API_KEY'] = str(api_key)
+                    os.environ['ANTHROPIC_API_KEY'] = str(api_key).strip()
+            # Try attribute access as fallback
+            elif hasattr(st.secrets, 'ANTHROPIC_API_KEY'):
+                api_key = getattr(st.secrets, 'ANTHROPIC_API_KEY', '')
+                if api_key:
+                    os.environ['ANTHROPIC_API_KEY'] = str(api_key).strip()
     except Exception as e:
         # Silently fail - secrets might not be available yet
         pass
