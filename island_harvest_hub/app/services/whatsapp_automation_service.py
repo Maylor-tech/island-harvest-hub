@@ -25,7 +25,11 @@ class WhatsAppAutomationService:
     
     def __init__(self, config_path="whatsapp_config.json"):
         """Initialize WhatsApp automation service with Twilio."""
-        self.config = self.load_config(config_path)
+        # Try to load from Streamlit secrets first (for Streamlit Cloud)
+        self.config = self.load_config_from_secrets()
+        if not self.config:
+            # Fallback to config file
+            self.config = self.load_config(config_path)
         self.client = None
         
         if self.config and self.config.get("enable_whatsapp"):
@@ -41,6 +45,26 @@ class WhatsAppAutomationService:
             except Exception as e:
                 if self.config.get("debug", False):
                     st.warning(f"Twilio client initialization failed: {str(e)}")
+    
+    def load_config_from_secrets(self) -> Optional[Dict]:
+        """Load WhatsApp configuration from Streamlit secrets."""
+        if hasattr(st, 'secrets'):
+            try:
+                # Check if whatsapp section exists in secrets
+                if 'whatsapp' in st.secrets:
+                    whatsapp_secrets = st.secrets['whatsapp']
+                    if isinstance(whatsapp_secrets, dict):
+                        return {
+                            'account_sid': whatsapp_secrets.get('account_sid', ''),
+                            'auth_token': whatsapp_secrets.get('auth_token', ''),
+                            'twilio_whatsapp_number': whatsapp_secrets.get('twilio_whatsapp_number', ''),
+                            'enable_whatsapp': whatsapp_secrets.get('enable_whatsapp', False),
+                            'debug': whatsapp_secrets.get('debug', False)
+                        }
+            except Exception as e:
+                # Silently fail if secrets not available
+                pass
+        return None
     
     def load_config(self, path: str) -> Optional[Dict]:
         """Load WhatsApp configuration from JSON file."""
