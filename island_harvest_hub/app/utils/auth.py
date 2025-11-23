@@ -24,17 +24,26 @@ def get_credentials():
             # Check if auth section exists in secrets
             if 'auth' in st.secrets:
                 auth_secrets = st.secrets['auth']
-                password_hash = auth_secrets.get('password_hash', '') if isinstance(auth_secrets, dict) else ''
-                username = auth_secrets.get('username', 'admin') if isinstance(auth_secrets, dict) else 'admin'
+                # Handle both dict and object access
+                if isinstance(auth_secrets, dict):
+                    password_hash = auth_secrets.get('password_hash', '')
+                    username = auth_secrets.get('username', 'admin')
+                else:
+                    # If it's an object (like Streamlit's secret access)
+                    password_hash = getattr(auth_secrets, 'password_hash', '') or ''
+                    username = getattr(auth_secrets, 'username', 'admin') or 'admin'
                 
-                if password_hash:  # Only return if password_hash is not empty
+                # Only return if password_hash is not empty
+                if password_hash and password_hash.strip():
                     return {
                         'username': username,
                         'password_hash': password_hash
                     }
         except Exception as e:
-            # Debug: uncomment to see errors
-            # st.error(f"Error reading secrets: {e}")
+            # Debug: show error in development
+            import sys
+            if '--debug' in sys.argv:
+                st.error(f"Error reading auth secrets: {e}")
             pass
     
     # Fallback to environment variables
