@@ -1,0 +1,11 @@
+{
+    "smtp_server": "smtp.hostinger.com",
+    "smtp_port": 465,
+    "use_ssl": true,
+    "use_tls": false,
+    "sender_email": "info@bornfidis.com",
+    "sender_password": "bbmID#794478",
+    "default_recipient": "bornfidisprovisions@gmail.com",
+    "enable_notifications": true,
+    "debug": true
+}

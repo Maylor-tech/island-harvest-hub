@@ -1,0 +1,252 @@
+{
+    "timestamp": "2025-06-10T17:17:47.431786",
+    "database_size_mb": 0.1,
+    "table_sizes": {
+        "customers": 3,
+        "farmers": 3,
+        "daily_logs": 0,
+        "transactions": 3,
+        "message_templates": 3,
+        "meetings": 0,
+        "follow_up_tasks": 0,
+        "documents": 3,
+        "goals": 0,
+        "performance_metrics": 0,
+        "partnerships": 0,
+        "orders": 3,
+        "farmer_payments": 0,
+        "order_items": 6,
+        "invoices": 0,
+        "sqlite_stat1": 7
+    },
+    "table_statistics": {
+        "customers": {
+            "columns": 11,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "name",
+                "contact_person",
+                "phone",
+                "email",
+                "address",
+                "preferences",
+                "satisfaction_score",
+                "feedback",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "farmers": {
+            "columns": 14,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "name",
+                "contact_person",
+                "phone",
+                "email",
+                "address",
+                "product_specialties",
+                "pickup_schedule",
+                "quality_records",
+                "payment_history",
+                "performance_notes",
+                "training_needs",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "daily_logs": {
+            "columns": 9,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "log_date",
+                "orders_fulfilled",
+                "quality_control_notes",
+                "temperature_logs",
+                "delivery_route_notes",
+                "issue_tracking",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "transactions": {
+            "columns": 9,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "date",
+                "type",
+                "description",
+                "amount",
+                "related_entity_id",
+                "related_entity_type",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "message_templates": {
+            "columns": 7,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "name",
+                "type",
+                "subject",
+                "body",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "meetings": {
+            "columns": 8,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "title",
+                "date_time",
+                "attendees",
+                "notes",
+                "reminders_sent",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "follow_up_tasks": {
+            "columns": 9,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "description",
+                "due_date",
+                "status",
+                "assigned_to",
+                "related_entity_id",
+                "related_entity_type",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "documents": {
+            "columns": 7,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "name",
+                "file_path",
+                "type",
+                "version",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "goals": {
+            "columns": 10,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "name",
+                "description",
+                "target_value",
+                "current_value",
+                "start_date",
+                "end_date",
+                "status",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "performance_metrics": {
+            "columns": 7,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "name",
+                "value",
+                "date",
+                "notes",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "partnerships": {
+            "columns": 8,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "name",
+                "type",
+                "contact_person",
+                "status",
+                "notes",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "orders": {
+            "columns": 9,
+            "rows": 3,
+            "column_names": [
+                "id",
+                "customer_id",
+                "order_date",
+                "delivery_date",
+                "status",
+                "total_amount",
+                "notes",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "farmer_payments": {
+            "columns": 5,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "farmer_id",
+                "payment_date",
+                "amount",
+                "notes"
+            ]
+        },
+        "order_items": {
+            "columns": 6,
+            "rows": 6,
+            "column_names": [
+                "id",
+                "order_id",
+                "product_name",
+                "quantity",
+                "unit_price",
+                "subtotal"
+            ]
+        },
+        "invoices": {
+            "columns": 9,
+            "rows": 0,
+            "column_names": [
+                "id",
+                "customer_id",
+                "order_id",
+                "invoice_date",
+                "due_date",
+                "total_amount",
+                "status",
+                "created_at",
+                "updated_at"
+            ]
+        },
+        "sqlite_stat1": {
+            "columns": 3,
+            "rows": 7,
+            "column_names": [
+                "tbl",
+                "idx",
+                "stat"
+            ]
+        }
+    },
+    "backup_count": 1
+}
