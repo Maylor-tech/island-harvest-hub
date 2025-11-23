@@ -1,0 +1,27 @@
+# Island Harvest Hub AI Assistant - Requirements File
+# For Streamlit Cloud deployment
+
+# Web framework
+streamlit>=1.28.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Date and time handling
+python-dateutil>=2.8.0
+
+# Excel export
+openpyxl>=3.1.0
+
+# PDF generation
+reportlab>=4.0.0
+
+# Data manipulation
+pandas>=2.0.0
+
+# Visualization
+plotly>=5.0.0
+
+# Additional utilities
+requests>=2.31.0
+
