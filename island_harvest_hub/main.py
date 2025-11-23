@@ -14,9 +14,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 if not os.environ.get('ANTHROPIC_API_KEY'):
     # First, try to get from Streamlit secrets (for Streamlit Cloud)
     try:
-        if hasattr(st, 'secrets') and 'ANTHROPIC_API_KEY' in st.secrets:
-            os.environ['ANTHROPIC_API_KEY'] = st.secrets['ANTHROPIC_API_KEY']
-    except Exception:
+        if hasattr(st, 'secrets'):
+            # Try direct access first
+            if 'ANTHROPIC_API_KEY' in st.secrets:
+                api_key = st.secrets['ANTHROPIC_API_KEY']
+                if api_key:
+                    os.environ['ANTHROPIC_API_KEY'] = str(api_key)
+    except Exception as e:
+        # Silently fail - secrets might not be available yet
         pass
     
     # If not in secrets, try to find .env file in parent directory (project root)

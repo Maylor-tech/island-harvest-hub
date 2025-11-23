@@ -118,11 +118,32 @@ def show_ai_advisor():
         To use the AI Business Advisor, you need to set up your Anthropic API key:
         
         1. Get your API key from: https://console.anthropic.com/
-        2. Set environment variable: `ANTHROPIC_API_KEY=your-key-here`
-        3. Restart the application
+        2. Add to Streamlit Cloud Secrets:
+           ```toml
+           ANTHROPIC_API_KEY = "your-key-here"
+           ```
+        3. Or set environment variable: `ANTHROPIC_API_KEY=your-key-here`
+        4. Restart the application
         
         **Need help?** Contact support or check the documentation.
         """)
+        
+        # Debug info
+        with st.expander("🔍 Debug Information"):
+            st.write("**Checking for API key in:**")
+            st.write(f"- Environment variable: {bool(os.environ.get('ANTHROPIC_API_KEY'))}")
+            try:
+                if hasattr(st, 'secrets'):
+                    st.write(f"- Streamlit secrets available: True")
+                    st.write(f"- ANTHROPIC_API_KEY in secrets: {'ANTHROPIC_API_KEY' in st.secrets}")
+                    if 'ANTHROPIC_API_KEY' in st.secrets:
+                        key_preview = str(st.secrets['ANTHROPIC_API_KEY'])[:20] + "..." if len(str(st.secrets['ANTHROPIC_API_KEY'])) > 20 else str(st.secrets['ANTHROPIC_API_KEY'])
+                        st.write(f"- Key preview: {key_preview}")
+                else:
+                    st.write("- Streamlit secrets available: False")
+            except Exception as e:
+                st.write(f"- Error checking secrets: {str(e)}")
+        
         return
     
     # Get business data
