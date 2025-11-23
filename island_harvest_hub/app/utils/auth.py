@@ -21,13 +21,20 @@ def get_credentials():
     # Try to get from Streamlit secrets first (for Streamlit Cloud)
     if hasattr(st, 'secrets'):
         try:
-            secrets = st.secrets.get('auth', {})
-            if secrets:
-                return {
-                    'username': secrets.get('username', 'admin'),
-                    'password_hash': secrets.get('password_hash', '')
-                }
-        except Exception:
+            # Check if auth section exists in secrets
+            if 'auth' in st.secrets:
+                auth_secrets = st.secrets['auth']
+                password_hash = auth_secrets.get('password_hash', '') if isinstance(auth_secrets, dict) else ''
+                username = auth_secrets.get('username', 'admin') if isinstance(auth_secrets, dict) else 'admin'
+                
+                if password_hash:  # Only return if password_hash is not empty
+                    return {
+                        'username': username,
+                        'password_hash': password_hash
+                    }
+        except Exception as e:
+            # Debug: uncomment to see errors
+            # st.error(f"Error reading secrets: {e}")
             pass
     
     # Fallback to environment variables
