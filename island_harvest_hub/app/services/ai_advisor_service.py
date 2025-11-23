@@ -16,7 +16,20 @@ class AIAdvisorService:
     """Service for AI-powered business insights using Claude API"""
     
     def __init__(self):
+        # Try to get API key from environment or Streamlit secrets
         self.api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+        
+        # If not in environment, try Streamlit secrets (for Streamlit Cloud)
+        if not self.api_key:
+            try:
+                import streamlit as st
+                if hasattr(st, 'secrets') and 'ANTHROPIC_API_KEY' in st.secrets:
+                    self.api_key = st.secrets['ANTHROPIC_API_KEY']
+                    # Also set in environment for consistency
+                    os.environ['ANTHROPIC_API_KEY'] = self.api_key
+            except Exception:
+                pass
+        
         self.api_url = "https://api.anthropic.com/v1/messages"
         self.model = "claude-sonnet-4-20250514"
         

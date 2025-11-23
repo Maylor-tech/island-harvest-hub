@@ -10,24 +10,32 @@ from datetime import datetime
 # Add the current directory to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Load environment variables from .env file if not already set
+# Load API key from Streamlit secrets (for Streamlit Cloud) or .env file (for local)
 if not os.environ.get('ANTHROPIC_API_KEY'):
-    # Try to find .env file in parent directory (project root)
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(current_dir)
-    env_path = os.path.join(parent_dir, '.env')
+    # First, try to get from Streamlit secrets (for Streamlit Cloud)
+    try:
+        if hasattr(st, 'secrets') and 'ANTHROPIC_API_KEY' in st.secrets:
+            os.environ['ANTHROPIC_API_KEY'] = st.secrets['ANTHROPIC_API_KEY']
+    except Exception:
+        pass
     
-    if os.path.exists(env_path):
-        try:
-            with open(env_path, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#') and '=' in line:
-                        key, value = line.split('=', 1)
-                        if key.strip() == 'ANTHROPIC_API_KEY':
-                            os.environ[key.strip()] = value.strip()
-        except Exception:
-            pass
+    # If not in secrets, try to find .env file in parent directory (project root)
+    if not os.environ.get('ANTHROPIC_API_KEY'):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        env_path = os.path.join(parent_dir, '.env')
+        
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#') and '=' in line:
+                            key, value = line.split('=', 1)
+                            if key.strip() == 'ANTHROPIC_API_KEY':
+                                os.environ[key.strip()] = value.strip()
+            except Exception:
+                pass
 
 from app.services.customer_service import CustomerService
 from app.services.supplier_service import SupplierService

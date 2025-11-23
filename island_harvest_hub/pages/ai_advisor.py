@@ -21,29 +21,37 @@ if not check_password():
     login()
     st.stop()
 
-# Load environment variables from .env file if not already set
+# Load API key from Streamlit secrets (for Streamlit Cloud) or .env file (for local)
 if not os.environ.get('ANTHROPIC_API_KEY'):
-    # Try multiple possible locations for .env file
-    possible_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'),  # From pages/ to root
-        os.path.join(os.getcwd(), '.env'),  # Current working directory
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'),  # From pages/ to island_harvest_hub/
-    ]
+    # First, try to get from Streamlit secrets (for Streamlit Cloud)
+    try:
+        if hasattr(st, 'secrets') and 'ANTHROPIC_API_KEY' in st.secrets:
+            os.environ['ANTHROPIC_API_KEY'] = st.secrets['ANTHROPIC_API_KEY']
+    except Exception:
+        pass
     
-    for env_path in possible_paths:
-        if os.path.exists(env_path):
-            try:
-                with open(env_path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith('#') and '=' in line:
-                            key, value = line.split('=', 1)
-                            if key.strip() == 'ANTHROPIC_API_KEY':
-                                os.environ[key.strip()] = value.strip()
-                                break
-            except Exception:
-                continue
-            break
+    # If not in secrets, try multiple possible locations for .env file
+    if not os.environ.get('ANTHROPIC_API_KEY'):
+        possible_paths = [
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'),  # From pages/ to root
+            os.path.join(os.getcwd(), '.env'),  # Current working directory
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'),  # From pages/ to island_harvest_hub/
+        ]
+        
+        for env_path in possible_paths:
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path, 'r') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith('#') and '=' in line:
+                                key, value = line.split('=', 1)
+                                if key.strip() == 'ANTHROPIC_API_KEY':
+                                    os.environ[key.strip()] = value.strip()
+                                    break
+                except Exception:
+                    continue
+                break
 
 
 def get_business_context_data(business_id: str) -> dict:
