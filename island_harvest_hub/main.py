@@ -446,7 +446,7 @@ def show_customer_management():
                             st.write(f"**Added:** {customer.created_at.strftime('%Y-%m-%d') if customer.created_at else 'N/A'}")
                         
                         # Action buttons
-                        col1, col2, col3 = st.columns(3)
+                        col1, col2, col3, col4 = st.columns(4)
                         with col1:
                             if st.button(f"📊 Analytics", key=f"analytics_{customer.id}"):
                                 st.session_state.selected_customer_id = customer.id
@@ -456,6 +456,133 @@ def show_customer_management():
                         with col3:
                             if st.button(f"⭐ Rate", key=f"rate_{customer.id}"):
                                 st.session_state.selected_customer_id = customer.id
+                        with col4:
+                            if customer.phone:
+                                if st.button(f"💬 WhatsApp", key=f"whatsapp_{customer.id}"):
+                                    st.session_state.whatsapp_customer_id = customer.id
+                                    st.session_state.whatsapp_customer_phone = customer.phone
+                                    st.session_state.whatsapp_customer_name = customer.name
+                                    st.rerun()
+                        
+                        # WhatsApp messaging section (if customer selected)
+                        if st.session_state.get('whatsapp_customer_id') == customer.id:
+                            st.markdown("---")
+                            st.subheader(f"💬 Send WhatsApp Message to {customer.name}")
+                            
+                            from app.services.whatsapp_automation_service import WhatsAppAutomationService
+                            whatsapp_service = WhatsAppAutomationService()
+                            
+                            # Quick message templates
+                            message_type = st.selectbox(
+                                "Message Type",
+                                ["Custom Message", "Order Confirmation", "Delivery Notification", "Payment Reminder"],
+                                key=f"msg_type_{customer.id}"
+                            )
+                            
+                            if message_type == "Custom Message":
+                                custom_message = st.text_area("Enter your message", key=f"custom_msg_{customer.id}")
+                                if st.button("Send Message", key=f"send_custom_{customer.id}"):
+                                    if custom_message:
+                                        success, msg = whatsapp_service.send_custom_message(customer.phone, custom_message)
+                                        if success:
+                                            st.success(f"✅ {msg}")
+                                        else:
+                                            st.error(f"❌ {msg}")
+                                    else:
+                                        st.warning("Please enter a message")
+                            
+                            elif message_type == "Order Confirmation":
+                                # Get customer orders
+                                orders = customer_service.get_customer_orders(customer.id)
+                                if orders:
+                                    order_select = st.selectbox(
+                                        "Select Order",
+                                        orders,
+                                        format_func=lambda o: f"Order #{o.id} - ${o.total_amount:.2f}",
+                                        key=f"order_select_{customer.id}"
+                                    )
+                                    if st.button("Send Order Confirmation", key=f"send_order_{customer.id}"):
+                                        order_items = [
+                                            {
+                                                'product_name': item.product_name,
+                                                'quantity': item.quantity,
+                                                'unit_price': item.unit_price
+                                            }
+                                            for item in order_select.order_items
+                                        ]
+                                        delivery_date_str = order_select.delivery_date.strftime('%B %d, %Y')
+                                        success, msg = whatsapp_service.send_order_confirmation(
+                                            customer_name=customer.name or customer.contact_person or "Customer",
+                                            customer_phone=customer.phone,
+                                            order_id=order_select.id,
+                                            order_items=order_items,
+                                            delivery_date=delivery_date_str,
+                                            total_amount=order_select.total_amount,
+                                            delivery_address=customer.address
+                                        )
+                                        if success:
+                                            st.success(f"✅ {msg}")
+                                        else:
+                                            st.error(f"❌ {msg}")
+                                else:
+                                    st.info("No orders found for this customer")
+                            
+                            elif message_type == "Delivery Notification":
+                                orders = customer_service.get_customer_orders(customer.id)
+                                if orders:
+                                    order_select = st.selectbox(
+                                        "Select Order",
+                                        orders,
+                                        format_func=lambda o: f"Order #{o.id} - {o.delivery_date.strftime('%B %d, %Y')}",
+                                        key=f"delivery_order_{customer.id}"
+                                    )
+                                    time_window = st.text_input("Time Window", value="9 AM - 12 PM", key=f"time_window_{customer.id}")
+                                    if st.button("Send Delivery Notification", key=f"send_delivery_{customer.id}"):
+                                        delivery_date_str = order_select.delivery_date.strftime('%B %d, %Y')
+                                        success, msg = whatsapp_service.send_delivery_notification(
+                                            customer_name=customer.name or customer.contact_person or "Customer",
+                                            customer_phone=customer.phone,
+                                            order_id=order_select.id,
+                                            delivery_date=delivery_date_str,
+                                            time_window=time_window
+                                        )
+                                        if success:
+                                            st.success(f"✅ {msg}")
+                                        else:
+                                            st.error(f"❌ {msg}")
+                                else:
+                                    st.info("No orders found for this customer")
+                            
+                            elif message_type == "Payment Reminder":
+                                from app.services.financial_service import FinancialService
+                                financial_service = FinancialService()
+                                invoices = financial_service.get_invoices_by_customer(customer.id)
+                                if invoices:
+                                    invoice_select = st.selectbox(
+                                        "Select Invoice",
+                                        invoices,
+                                        format_func=lambda i: f"Invoice #{i.id} - ${i.total_amount:.2f} (Due: {i.due_date.strftime('%B %d, %Y')})",
+                                        key=f"invoice_select_{customer.id}"
+                                    )
+                                    if st.button("Send Payment Reminder", key=f"send_payment_{customer.id}"):
+                                        due_date_str = invoice_select.due_date.strftime('%B %d, %Y')
+                                        success, msg = whatsapp_service.send_payment_reminder(
+                                            customer_name=customer.name or customer.contact_person or "Customer",
+                                            customer_phone=customer.phone,
+                                            invoice_id=invoice_select.id,
+                                            amount=invoice_select.total_amount,
+                                            due_date=due_date_str
+                                        )
+                                        if success:
+                                            st.success(f"✅ {msg}")
+                                        else:
+                                            st.error(f"❌ {msg}")
+                                else:
+                                    st.info("No invoices found for this customer")
+                            
+                            if st.button("Close", key=f"close_whatsapp_{customer.id}"):
+                                st.session_state.whatsapp_customer_id = None
+                                st.rerun()
             else:
                 st.info("No customers found. Add your first customer using the 'Add Customer' tab!")
         
@@ -983,6 +1110,29 @@ def show_financial_management():
                             st.success("Invoice status updated successfully!")
                         except Exception as e:
                             st.error(f"Error updating invoice status: {str(e)}")
+                
+                # WhatsApp payment reminder button
+                st.markdown("---")
+                customer = financial_service.db.query(Customer).filter(Customer.id == invoice.customer_id).first()
+                if customer and customer.phone:
+                    from app.services.whatsapp_automation_service import WhatsAppAutomationService
+                    whatsapp_service = WhatsAppAutomationService()
+                    
+                    if st.button(f"💬 Send Payment Reminder via WhatsApp", key=f"whatsapp_invoice_{invoice.id}"):
+                        due_date_str = invoice.due_date.strftime('%B %d, %Y')
+                        success, msg = whatsapp_service.send_payment_reminder(
+                            customer_name=customer.name or customer.contact_person or "Customer",
+                            customer_phone=customer.phone,
+                            invoice_id=invoice.id,
+                            amount=invoice.total_amount,
+                            due_date=due_date_str
+                        )
+                        if success:
+                            st.success(f"✅ {msg}")
+                        else:
+                            st.error(f"❌ {msg}")
+                else:
+                    st.info("⚠️ Customer phone number not available for WhatsApp messaging")
     
     with tab4:
         st.subheader("Cash Flow Analysis")

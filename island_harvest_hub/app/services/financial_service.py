@@ -7,6 +7,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from app.models import Transaction, Invoice, Order, Customer
 from app.database.config import SessionLocal
+from app.services.whatsapp_automation_service import WhatsAppAutomationService
 
 class FinancialService:
     """Service class for financial management operations."""
@@ -129,6 +130,22 @@ class FinancialService:
                 related_entity_id=invoice.id,
                 related_entity_type="Invoice"
             )
+            
+            # Send WhatsApp payment reminder notification
+            try:
+                if customer and customer.phone:
+                    whatsapp_service = WhatsAppAutomationService()
+                    due_date_str = due_date.strftime('%B %d, %Y')
+                    whatsapp_service.send_payment_reminder(
+                        customer_name=customer.name or customer.contact_person or "Customer",
+                        customer_phone=customer.phone,
+                        invoice_id=invoice.id,
+                        amount=total_amount,
+                        due_date=due_date_str
+                    )
+            except Exception as whatsapp_error:
+                # Log error but don't fail invoice creation if WhatsApp fails
+                print(f"WhatsApp notification failed: {str(whatsapp_error)}")
             
             return invoice
         except Exception as e:

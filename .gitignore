@@ -22,5 +22,9 @@ ENV/
 .streamlit/secrets.toml
 .streamlit/secrets.toml.local
 
+# Configuration files with credentials
+whatsapp_config.json
+email_config.json
+
 # Logs
 *.log 

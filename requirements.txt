@@ -25,3 +25,6 @@ plotly>=5.0.0
 # Additional utilities
 requests>=2.31.0
 
+# WhatsApp integration
+twilio>=8.10.0
+

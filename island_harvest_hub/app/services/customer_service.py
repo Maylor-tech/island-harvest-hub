@@ -8,6 +8,7 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from app.models import Customer, Order, OrderItem, Invoice
 from app.database.config import SessionLocal
+from app.services.whatsapp_automation_service import WhatsAppAutomationService
 
 class CustomerService:
     """Service class for customer management operations."""
@@ -178,6 +179,33 @@ class CustomerService:
             
             self.db.commit()
             self.db.refresh(order)
+            
+            # Send WhatsApp order confirmation notification
+            try:
+                if customer.phone:
+                    whatsapp_service = WhatsAppAutomationService()
+                    order_items = [
+                        {
+                            'product_name': item['product_name'],
+                            'quantity': item['quantity'],
+                            'unit_price': item['unit_price']
+                        }
+                        for item in items
+                    ]
+                    delivery_date_str = delivery_date.strftime('%B %d, %Y')
+                    whatsapp_service.send_order_confirmation(
+                        customer_name=customer.name or customer.contact_person or "Customer",
+                        customer_phone=customer.phone,
+                        order_id=order.id,
+                        order_items=order_items,
+                        delivery_date=delivery_date_str,
+                        total_amount=total_amount,
+                        delivery_address=customer.address
+                    )
+            except Exception as whatsapp_error:
+                # Log error but don't fail order creation if WhatsApp fails
+                print(f"WhatsApp notification failed: {str(whatsapp_error)}")
+            
             return order
         except Exception as e:
             self.db.rollback()
