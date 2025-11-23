@@ -8,8 +8,16 @@ import os
 import streamlit as st
 from typing import Dict, Optional, List, Tuple
 from datetime import datetime
-from twilio.rest import Client
-from twilio.base.exceptions import TwilioRestException
+
+# Try to import Twilio, but handle gracefully if not available
+try:
+    from twilio.rest import Client
+    from twilio.base.exceptions import TwilioRestException
+    TWILIO_AVAILABLE = True
+except ImportError:
+    TWILIO_AVAILABLE = False
+    Client = None
+    TwilioRestException = Exception
 
 
 class WhatsAppAutomationService:
@@ -21,6 +29,10 @@ class WhatsAppAutomationService:
         self.client = None
         
         if self.config and self.config.get("enable_whatsapp"):
+            if not TWILIO_AVAILABLE:
+                if st:
+                    st.warning("⚠️ Twilio package not installed. Install with: pip install twilio")
+                return
             try:
                 self.client = Client(
                     self.config.get("account_sid"),
@@ -55,6 +67,9 @@ class WhatsAppAutomationService:
         """
         if not self.config or not self.config.get("enable_whatsapp"):
             return False, "WhatsApp notifications are disabled."
+        
+        if not TWILIO_AVAILABLE:
+            return False, "Twilio package not installed. Install with: pip install twilio"
         
         if not self.client:
             return False, "Twilio client not initialized. Check your configuration."
