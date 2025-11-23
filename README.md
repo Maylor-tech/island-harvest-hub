@@ -20,10 +20,26 @@ This application is configured for deployment on Streamlit Cloud.
 3. **Configure Secrets:**
    - In Streamlit Cloud, go to Settings → Secrets
    - Add your environment variables:
+     ```toml
+     # API Key
+     ANTHROPIC_API_KEY = "your_api_key_here"
+     
+     # Database (optional, defaults to SQLite)
+     DATABASE_URL = "sqlite:///island_harvest_hub.db"
+     
+     # Authentication (required for security)
+     [auth]
+     username = "admin"
+     password_hash = "<generate_with_generate_password_hash.py>"
      ```
-     ANTHROPIC_API_KEY=your_api_key_here
-     DATABASE_URL=sqlite:///island_harvest_hub.db
-     ```
+   
+   **Generate password hash:**
+   ```bash
+   cd island_harvest_hub
+   python generate_password_hash.py
+   ```
+   
+   See `AUTHENTICATION_SETUP.md` for detailed authentication setup instructions.
 
 ### Local Development
 
