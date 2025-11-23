@@ -58,69 +58,36 @@ from pages.database_management import main as show_database_management
 from pages.ai_advisor import show_ai_advisor
 from pages.unified_financials import show_unified_financials
 from app.config.business_profiles import get_all_active_businesses, get_business_display_names, get_business_profile
-from app.database.config import init_db, DATABASE_PATH
+from app.database.config import DATABASE_PATH
+from app.database.manager import get_database_manager
 from app.utils.auth import check_password, login, show_logout_button
 from pathlib import Path
-import sqlite3
 
 # Auto-initialize database if it doesn't exist (for Streamlit Cloud deployment)
 def ensure_database_initialized():
-    """Ensure database exists and is initialized."""
-    db_path = Path(DATABASE_PATH)
-    
-    # Check if database file exists
-    if not db_path.exists():
-        try:
-            # Initialize database
-            init_db()
-            # Run migration to add business_id columns if needed
-            import sys
-            migrate_script = os.path.join(os.path.dirname(__file__), 'migrate_add_business_id.py')
-            if os.path.exists(migrate_script):
-                import importlib.util
-                spec = importlib.util.spec_from_file_location("migrate_add_business_id", migrate_script)
-                migrate_module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(migrate_module)
-                migrate_module.migrate_database()
-            return True
-        except Exception as e:
-            st.error(f"Error initializing database: {str(e)}")
+    """
+    Ensure database exists and is initialized.
+    Uses the new DatabaseManager for consistent initialization.
+    """
+    try:
+        # Set silent mode to reduce console output in Streamlit
+        os.environ['IHH_SILENT_INIT'] = '1'
+        
+        manager = get_database_manager()
+        success = manager.initialize(run_migrations=True, verify_schema=False)
+        
+        # Clear silent mode
+        os.environ.pop('IHH_SILENT_INIT', None)
+        
+        if not success:
+            st.error("Failed to initialize database. Check logs for details.")
             return False
-    else:
-        # Database exists, check if tables exist
-        try:
-            conn = sqlite3.connect(str(db_path))
-            cursor = conn.cursor()
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'")
-            if not cursor.fetchone():
-                # Database exists but tables don't, initialize
-                init_db()
-                # Run migration
-                migrate_script = os.path.join(os.path.dirname(__file__), 'migrate_add_business_id.py')
-                if os.path.exists(migrate_script):
-                    import importlib.util
-                    spec = importlib.util.spec_from_file_location("migrate_add_business_id", migrate_script)
-                    migrate_module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(migrate_module)
-                    migrate_module.migrate_database()
-            else:
-                # Check if business_id column exists
-                cursor.execute("PRAGMA table_info(customers)")
-                columns = [col[1] for col in cursor.fetchall()]
-                if 'business_id' not in columns:
-                    # Run migration to add business_id
-                    migrate_script = os.path.join(os.path.dirname(__file__), 'migrate_add_business_id.py')
-                    if os.path.exists(migrate_script):
-                        import importlib.util
-                        spec = importlib.util.spec_from_file_location("migrate_add_business_id", migrate_script)
-                        migrate_module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(migrate_module)
-                        migrate_module.migrate_database()
-            conn.close()
-            return True
-        except Exception as e:
-            st.error(f"Error checking database: {str(e)}")
-            return False
+        
+        return True
+    except Exception as e:
+        os.environ.pop('IHH_SILENT_INIT', None)
+        st.error(f"Error initializing database: {str(e)}")
+        return False
 
 # Initialize database on app start (only once per session)
 if 'db_initialized' not in st.session_state:
