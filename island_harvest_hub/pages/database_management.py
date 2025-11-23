@@ -18,6 +18,12 @@ from queue import Queue
 # Add parent directory to path to import db_manager
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Require authentication
+from app.utils.auth import check_password, login
+if not check_password():
+    login()
+    st.stop()
 from db_manager import DatabaseManager
 
 # Global variables for real-time monitoring

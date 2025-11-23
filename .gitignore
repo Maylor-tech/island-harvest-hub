@@ -20,6 +20,7 @@ ENV/
 
 # Streamlit
 .streamlit/secrets.toml
+.streamlit/secrets.toml.local
 
 # Logs
 *.log 

@@ -10,6 +10,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 from app.services.unified_financial_service import UnifiedFinancialService
 from app.config.business_profiles import get_all_active_businesses, get_business_profile
+from app.utils.auth import check_password, login
+
+# Require authentication
+if not check_password():
+    login()
+    st.stop()
 
 
 def show_unified_financials():

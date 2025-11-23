@@ -41,6 +41,7 @@ from pages.ai_advisor import show_ai_advisor
 from pages.unified_financials import show_unified_financials
 from app.config.business_profiles import get_all_active_businesses, get_business_display_names, get_business_profile
 from app.database.config import init_db, DATABASE_PATH
+from app.utils.auth import check_password, login, show_logout_button
 from pathlib import Path
 import sqlite3
 
@@ -159,6 +160,14 @@ st.markdown("""
 
 def main():
     """Main application function."""
+    
+    # Check authentication - must be logged in to access
+    if not check_password():
+        login()
+        return
+    
+    # Show logout button in sidebar
+    show_logout_button()
     
     # Header
     st.markdown("""

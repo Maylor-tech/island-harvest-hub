@@ -14,6 +14,12 @@ from app.services.customer_service import CustomerService
 from app.services.financial_service import FinancialService
 from app.services.operations_service import OperationsService
 from app.config.business_profiles import get_business_profile
+from app.utils.auth import check_password, login
+
+# Require authentication
+if not check_password():
+    login()
+    st.stop()
 
 # Load environment variables from .env file if not already set
 if not os.environ.get('ANTHROPIC_API_KEY'):
